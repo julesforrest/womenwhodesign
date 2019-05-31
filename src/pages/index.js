@@ -321,6 +321,8 @@ export const pageQuery = graphql`
                 aspectRatio
                 src
                 srcSet
+                srcWebp
+                srcSetWebp
               }
             }
           }
