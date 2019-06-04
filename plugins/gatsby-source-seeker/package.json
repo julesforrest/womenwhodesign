@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "marked": "^0.5.2",
+    "marked": "^0.6.1",
     "node-fetch": "^2.3.0",
     "query-string": "^6.2.0"
   }
