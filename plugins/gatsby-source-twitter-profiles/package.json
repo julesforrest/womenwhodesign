@@ -20,7 +20,7 @@
     "gatsby-remark-smartypants": "^2.0.7",
     "gatsby-source-filesystem": "^2.0.11",
     "gatsby-transformer-sharp": "^2.1.9",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.13",
     "node-fetch": "^2.1.1",
     "node-sass": "^4.10.0",
     "query-string": "^5.1.0",
