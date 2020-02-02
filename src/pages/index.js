@@ -268,35 +268,40 @@ class App extends React.Component {
 
                     // if containsActiveFilter is true, then the designer should be included
                     return containsActiveFilter;
-                  }).map((profile, index) => (
-                    <Profile
-                      image={profile.node.profile.profile_image_url_https}
-                      sizes={
-                        profile.node.localFile &&
-                        profile.node.localFile.childImageSharp &&
-                        profile.node.localFile.childImageSharp.sizes
-                      }
-                      name={profile.node.profile.name}
-                      description={profile.node.profile.description}
-                      location={profile.node.profile.location || "N/A"}
-                      hex={`#${profile.node.profile.profile_link_color}`}
-                      handle={profile.node.profile.screen_name}
-                      key={profile.node.profile.id_str}
-                      contrast={profile.node.profile.contrast}
-                      displayUrl={
-                        profile.node.profile.entities.url
-                          ? profile.node.profile.entities.url.urls[0]
-                              .display_url
-                          : ""
-                      }
-                      expandedUrl={
-                        profile.node.profile.entities.url
-                          ? profile.node.profile.entities.url.urls[0]
-                              .expanded_url
-                          : ""
-                      }
-                    />
-                  ))}
+                  }).map((profile, index) => {
+                    if (index > 59) {
+                      return null;
+                    }
+                    return (
+                      <Profile
+                        image={profile.node.profile.profile_image_url_https}
+                        sizes={
+                          profile.node.localFile &&
+                          profile.node.localFile.childImageSharp &&
+                          profile.node.localFile.childImageSharp.sizes
+                        }
+                        name={profile.node.profile.name}
+                        description={profile.node.profile.description}
+                        location={profile.node.profile.location || "N/A"}
+                        hex={`#${profile.node.profile.profile_link_color}`}
+                        handle={profile.node.profile.screen_name}
+                        key={profile.node.profile.id_str}
+                        contrast={profile.node.profile.contrast}
+                        displayUrl={
+                          profile.node.profile.entities.url
+                            ? profile.node.profile.entities.url.urls[0]
+                                .display_url
+                            : ""
+                        }
+                        expandedUrl={
+                          profile.node.profile.entities.url
+                            ? profile.node.profile.entities.url.urls[0]
+                                .expanded_url
+                            : ""
+                        }
+                      />
+                    );
+                  })}
               </div>
             </div>
           )}

@@ -8,7 +8,7 @@
     "serve": "gatsby serve"
   },
   "dependencies": {
-    "clickable-box": "^0.1.7",
+    "clickable-box": "^1.1.0",
     "gatsby": "^2.0.63",
     "gatsby-cli": "^2.4.7",
     "gatsby-image": "^2.0.22",
