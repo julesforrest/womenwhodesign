@@ -5,14 +5,8 @@ import Profile from "../components/profile";
 import Layout from "../components/layout";
 import FilterPill from "../components/filterPill";
 import Nav from "../components/nav";
-import Loader from "../components/loader";
 import paginate from "../paginate";
 import styles from "./index.module.scss";
-
-const capitalize = s => {
-  if (typeof s !== "string") return "";
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
 
 const useFetch = (url, options) => {
   const [data, setData] = useState(null);
@@ -28,13 +22,12 @@ const useFetch = (url, options) => {
       }
     };
     fetchData();
-  }, []);
+  }, [url, options]);
 
   return { data, error };
 };
 
 const App = () => {
-  const [visibleDesigners, setVisibleDesigners] = useState([]);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [isFilterListVisible, setIsFilterListVisible] = useState(false);
@@ -43,21 +36,24 @@ const App = () => {
 
   const profileContainerRef = useRef();
 
-  // const numDesignersPerPage = 52;
-  // const numPagesToShowInPagination = 5;
+  const numDesignersPerPage = 52;
+  const numPagesToShowInPagination = 5;
 
-  // const pagination = paginate(
-  //   visibleDesigners.length,
-  //   currentPage,
-  //   numDesignersPerPage,
-  //   numPagesToShowInPagination
-  // );
-
-  const { data } = useFetch(
-    "https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/randomizeDesigners?hash=abc"
+  const pagination = paginate(
+    1000,
+    currentPage,
+    numDesignersPerPage,
+    numPagesToShowInPagination
   );
 
-  console.log({ data });
+  const hash = useRef(Math.random());
+
+  const { data } = useFetch(
+    `https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/randomizeDesigners?hash=${
+      hash.current
+    }&limit=${numDesignersPerPage}&offset=${numDesignersPerPage *
+      (currentPage - 1)}`
+  );
 
   return (
     <Layout>
@@ -149,41 +145,39 @@ const App = () => {
           })}
           ref={profileContainerRef}
         >
-          {!data ? (
-            <Loader />
-          ) : (
-            <>
-              {selectedFilters.length > 0 && (
-                <div className={styles.filterBanner}>
-                  <h2 className={styles.filterHeadline}>→ </h2>
-                  <div className={styles.filterPillContainer}>
-                    {selectedFilters.map(filterId => (
-                      <FilterPill
-                        title={categories.find(c => c.id === filterId).title}
-                        key={filterId}
-                        onCloseClick={() => {
-                          const newSelectedFilters = [...selectedFilters];
-                          const i = newSelectedFilters.indexOf(filterId);
-                          newSelectedFilters.splice(i, 1);
+          {selectedFilters.length > 0 && (
+            <div className={styles.filterBanner}>
+              <h2 className={styles.filterHeadline}>→ </h2>
+              <div className={styles.filterPillContainer}>
+                {selectedFilters.map(filterId => (
+                  <FilterPill
+                    title={categories.find(c => c.id === filterId).title}
+                    key={filterId}
+                    onCloseClick={() => {
+                      const newSelectedFilters = [...selectedFilters];
+                      const i = newSelectedFilters.indexOf(filterId);
+                      newSelectedFilters.splice(i, 1);
 
-                          setSelectedFilters(newSelectedFilters);
-                          setCurrentPage(1);
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedFilters([]);
+                      setSelectedFilters(newSelectedFilters);
                       setCurrentPage(1);
                     }}
-                    className={styles.filterClear}
-                    type="button"
-                  >
-                    Clear
-                  </button>
-                </div>
-              )}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedFilters([]);
+                  setCurrentPage(1);
+                }}
+                className={styles.filterClear}
+                type="button"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+          {data && (
+            <>
               <div
                 className={classnames({
                   [styles.profiles]: true,
@@ -204,8 +198,7 @@ const App = () => {
                   />
                 ))}
               </div>
-
-              {/* <div className={styles.paginationContainer}>
+              <div className={styles.paginationContainer}>
                 <button
                   onClick={() => {
                     setCurrentPage(currentPage - 1);
@@ -280,7 +273,7 @@ const App = () => {
                 >
                   →
                 </button>
-              </div> */}
+              </div>
             </>
           )}
         </div>
