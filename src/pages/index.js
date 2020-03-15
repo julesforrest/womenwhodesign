@@ -10,23 +10,9 @@ import Nav from "../components/nav";
 import paginate from "../paginate";
 import styles from "./index.module.scss";
 
-const useFetch = (url, options) => {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(url, options);
-        const json = await res.json();
-        setData(json);
-      } catch (e) {
-        setError(e);
-      }
-    };
-    fetchData();
-  }, [url, options]);
-
-  return { data, error };
+const fetcher = async url => {
+  const r = await fetch(url);
+  return r.json();
 };
 
 const App = () => {
@@ -50,12 +36,14 @@ const App = () => {
         hash: hash.current,
         limit: numDesignersPerPage,
         offset: numDesignersPerPage * (currentPage - 1),
-        tags: selectedFilters
+        tags: selectedFilters.sort()
       }),
-    async url => {
-      const r = await fetch(url);
-      return r.json();
-    }
+    fetcher
+  );
+
+  const { data: metaData } = useSWR(
+    "https://womenwhodesign-e87dc.firebaseapp.com/meta",
+    fetcher
   );
 
   const pagination = data
@@ -130,7 +118,9 @@ const App = () => {
                           {category.title}
                         </span>
                       </label>
-                      <span className={styles.filterItemCounter}>100</span>
+                      <span className={styles.filterItemCounter}>
+                        {metaData && metaData.numDesignersPerTag[category.id]}
+                      </span>
                     </li>
                   );
                 })}
