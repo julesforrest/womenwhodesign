@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import classnames from "classnames";
 import { stringify as qsStringify } from "query-string";
+import useSWR from "swr";
 import categories from "../categories";
 import Profile from "../components/profile";
 import Layout from "../components/layout";
@@ -42,7 +43,7 @@ const App = () => {
 
   const hash = useRef(Math.random());
 
-  const { data } = useFetch(
+  const { data } = useSWR(
     // eslint-disable-next-line prefer-template
     "https://womenwhodesign-e87dc.firebaseapp.com/api?" +
       qsStringify({
@@ -50,7 +51,11 @@ const App = () => {
         limit: numDesignersPerPage,
         offset: numDesignersPerPage * (currentPage - 1),
         tags: selectedFilters
-      })
+      }),
+    async url => {
+      const r = await fetch(url);
+      return r.json();
+    }
   );
 
   const pagination = data
