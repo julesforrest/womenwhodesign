@@ -3,15 +3,6 @@ require("dotenv").config();
 module.exports = {
   plugins: [
     {
-      resolve: "gatsby-source-twitter-profiles",
-      options: {
-        consumerKey: process.env.WWD_TWITTER_CONSUMER_KEY,
-        consumerSecret: process.env.WWD_TWITTER_CONSUMER_KEY,
-        bearerToken: process.env.WWD_TWITTER_BEARER_TOKEN,
-        twitterIdForFollowingList: "855501234924429312"
-      }
-    },
-    {
       resolve: "gatsby-source-seeker",
       options: {
         key: process.env.WWD_SEEKER_KEY
@@ -25,8 +16,6 @@ module.exports = {
         }
       }
     },
-    `gatsby-plugin-sharp`,
-    `gatsby-transformer-sharp`,
     `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-plugin-google-analytics`,

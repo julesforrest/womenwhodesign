@@ -1,5 +1,5 @@
 import React from "react";
-import Img from "gatsby-image";
+// import Img from "gatsby-image";
 import twitter from "../../twitter.svg";
 import LocationIcon from "../location";
 import LinkIcon from "../linkIcon";
@@ -13,20 +13,11 @@ const Profile = props => {
         "--profile-theme-color": props.hex === "#FFFFFF" ? "#1da1f2" : props.hex
       }}
     >
-      {props.sizes ? (
-        <Img
-          alt={`${props.name}'s avatar on Twitter.'`}
-          sizes={props.sizes}
-          backgroundColor
-          className={styles.image}
-        />
-      ) : (
-        <img
-          className={styles.grayImage}
-          alt={`${props.name}'s avatar on Twitter.'`}
-          src={props.image.replace("_normal", "_400x400")}
-        />
-      )}
+      <img
+        className={styles.grayImage}
+        alt={`${props.name}'s avatar on Twitter.'`}
+        src={props.image.replace("_normal", "_400x400")}
+      />
       <h2 className={styles.name}>{props.name}</h2>
       <p className={styles.handle}>@{props.handle}</p>
       <p className={styles.location}>

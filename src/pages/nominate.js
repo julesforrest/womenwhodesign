@@ -16,7 +16,7 @@ const encode = data => {
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.designerArray = props.data.allTwitterProfile.edges;
+    this.designerArray = [];
     this.state = {
       name: "",
       reason: "",
@@ -159,17 +159,3 @@ class App extends React.Component {
 }
 
 export default App;
-
-export const pageQuery = graphql`
-  query Nominate {
-    allTwitterProfile {
-      edges {
-        node {
-          profile {
-            screen_name
-          }
-        }
-      }
-    }
-  }
-`;

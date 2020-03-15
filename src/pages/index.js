@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { shuffle } from "lodash";
-import { graphql } from "gatsby";
 import classnames from "classnames";
 import categories from "../categories";
 import Profile from "../components/profile";
@@ -16,8 +14,26 @@ const capitalize = s => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-const App = ({ data }) => {
-  const [isLoading, setIsLoading] = useState(true);
+const useFetch = (url, options) => {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(url, options);
+        const json = await res.json();
+        setData(json);
+      } catch (e) {
+        setError(e);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return { data, error };
+};
+
+const App = () => {
   const [visibleDesigners, setVisibleDesigners] = useState([]);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
@@ -27,29 +43,21 @@ const App = ({ data }) => {
 
   const profileContainerRef = useRef();
 
-  useEffect(() => {
-    const shuffledDesigners = shuffle(data.allTwitterProfile.edges);
-    setVisibleDesigners(shuffledDesigners);
-    setIsLoading(false);
-  }, [data.allTwitterProfile.edges]);
+  // const numDesignersPerPage = 52;
+  // const numPagesToShowInPagination = 5;
 
-  const numDesignersPerPage = 52;
-  const numPagesToShowInPagination = 5;
+  // const pagination = paginate(
+  //   visibleDesigners.length,
+  //   currentPage,
+  //   numDesignersPerPage,
+  //   numPagesToShowInPagination
+  // );
 
-  const filteredDesigners = visibleDesigners.filter(designer => {
-    if (selectedFilters.length === 0) {
-      return true;
-    }
-
-    return selectedFilters.some(filter => designer.node.profile.tags[filter]);
-  });
-
-  const pagination = paginate(
-    filteredDesigners.length,
-    currentPage,
-    numDesignersPerPage,
-    numPagesToShowInPagination
+  const { data } = useFetch(
+    "https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/randomizeDesigners?hash=abc"
   );
+
+  console.log({ data });
 
   return (
     <Layout>
@@ -61,7 +69,7 @@ const App = ({ data }) => {
             toggleFilterList={() => {
               setIsFilterListVisible(!isFilterListVisible);
             }}
-            isLoading={isLoading}
+            isLoading={!data}
           />
 
           <div
@@ -114,9 +122,7 @@ const App = ({ data }) => {
                           {category.title}
                         </span>
                       </label>
-                      <span className={styles.filterItemCounter}>
-                        {data[`tagCount${capitalize(category.id)}`].totalCount}
-                      </span>
+                      <span className={styles.filterItemCounter}>100</span>
                     </li>
                   );
                 })}
@@ -143,7 +149,7 @@ const App = ({ data }) => {
           })}
           ref={profileContainerRef}
         >
-          {isLoading ? (
+          {!data ? (
             <Loader />
           ) : (
             <>
@@ -184,40 +190,22 @@ const App = ({ data }) => {
                   [styles.filterBannerBump]: selectedFilters.length > 0
                 })}
               >
-                {filteredDesigners.map(({ node: designer }, i) => {
-                  if (i < pagination.startIndex || i > pagination.endIndex) {
-                    return null;
-                  }
-
-                  return (
-                    <Profile
-                      image={designer.profile.profile_image_url_https}
-                      sizes={
-                        designer.localFile &&
-                        designer.localFile.childImageSharp &&
-                        designer.localFile.childImageSharp.sizes
-                      }
-                      name={designer.profile.name}
-                      description={designer.profile.description}
-                      location={designer.profile.location || "N/A"}
-                      hex={`#${designer.profile.profile_link_color}`}
-                      handle={designer.profile.screen_name}
-                      key={designer.profile.screen_name}
-                      contrast={designer.profile.contrast}
-                      displayUrl={
-                        designer.profile.entities.url &&
-                        designer.profile.entities.url.urls[0].display_url
-                      }
-                      expandedUrl={
-                        designer.profile.entities.url &&
-                        designer.profile.entities.url.urls[0].expanded_url
-                      }
-                    />
-                  );
-                })}
+                {data.map(designer => (
+                  <Profile
+                    image={designer.image}
+                    name={designer.name}
+                    description={designer.description}
+                    location={designer.location}
+                    hex={designer.color}
+                    handle={designer.username}
+                    key={designer.username}
+                    displayUrl={designer.display_url}
+                    expandedUrl={designer.expanded_url}
+                  />
+                ))}
               </div>
 
-              <div className={styles.paginationContainer}>
+              {/* <div className={styles.paginationContainer}>
                 <button
                   onClick={() => {
                     setCurrentPage(currentPage - 1);
@@ -292,7 +280,7 @@ const App = ({ data }) => {
                 >
                   →
                 </button>
-              </div>
+              </div> */}
             </>
           )}
         </div>
@@ -302,210 +290,3 @@ const App = ({ data }) => {
 };
 
 export default App;
-
-export const pageQuery = graphql`
-  query Index {
-    allTwitterProfile {
-      edges {
-        node {
-          localFile {
-            childImageSharp {
-              sizes(grayscale: true, maxWidth: 200) {
-                sizes
-                aspectRatio
-                src
-                srcSet
-              }
-            }
-          }
-          profile {
-            description
-            name
-            screen_name
-            location
-            profile_image_url_https
-            profile_link_color
-            tags {
-              art
-              author
-              ceo
-              content
-              creative
-              developer
-              director
-              engineer
-              founder
-              freelance
-              graphic
-              head
-              illustrator
-              lead
-              letter
-              manager
-              product
-              research
-              speaker
-              systems
-              ux
-              vp
-              web
-              writer
-            }
-            entities {
-              url {
-                urls {
-                  expanded_url
-                  display_url
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    tagCountArt: allTwitterProfile(
-      filter: { profile: { tags: { art: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountAuthor: allTwitterProfile(
-      filter: { profile: { tags: { author: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountCeo: allTwitterProfile(
-      filter: { profile: { tags: { ceo: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountContent: allTwitterProfile(
-      filter: { profile: { tags: { content: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountCreative: allTwitterProfile(
-      filter: { profile: { tags: { creative: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountDeveloper: allTwitterProfile(
-      filter: { profile: { tags: { developer: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountDirector: allTwitterProfile(
-      filter: { profile: { tags: { director: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountEngineer: allTwitterProfile(
-      filter: { profile: { tags: { engineer: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountFounder: allTwitterProfile(
-      filter: { profile: { tags: { founder: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountFreelance: allTwitterProfile(
-      filter: { profile: { tags: { freelance: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountGraphic: allTwitterProfile(
-      filter: { profile: { tags: { graphic: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountHead: allTwitterProfile(
-      filter: { profile: { tags: { head: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountIllustrator: allTwitterProfile(
-      filter: { profile: { tags: { illustrator: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountLead: allTwitterProfile(
-      filter: { profile: { tags: { lead: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountLetter: allTwitterProfile(
-      filter: { profile: { tags: { letter: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountManager: allTwitterProfile(
-      filter: { profile: { tags: { manager: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountProduct: allTwitterProfile(
-      filter: { profile: { tags: { product: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountResearch: allTwitterProfile(
-      filter: { profile: { tags: { research: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountSpeaker: allTwitterProfile(
-      filter: { profile: { tags: { speaker: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountSystems: allTwitterProfile(
-      filter: { profile: { tags: { systems: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountUx: allTwitterProfile(
-      filter: { profile: { tags: { ux: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountVp: allTwitterProfile(
-      filter: { profile: { tags: { vp: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountWeb: allTwitterProfile(
-      filter: { profile: { tags: { web: { eq: true } } } }
-    ) {
-      totalCount
-    }
-
-    tagCountWriter: allTwitterProfile(
-      filter: { profile: { tags: { writer: { eq: true } } } }
-    ) {
-      totalCount
-    }
-  }
-`;
