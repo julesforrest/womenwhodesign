@@ -16,7 +16,7 @@ const Profile = props => {
       <img
         className={styles.grayImage}
         alt={`${props.name}'s avatar on Twitter.'`}
-        src={props.image.replace("_normal", "_400x400")}
+        src={props.image}
       />
       <h2 className={styles.name}>{props.name}</h2>
       <p className={styles.handle}>@{props.handle}</p>
