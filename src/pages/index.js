@@ -60,7 +60,7 @@ const App = () => {
 
   const pagination = data
     ? paginate(
-        data.info.totalDesigners,
+        data.info.numFilteredDesigners,
         currentPage,
         numDesignersPerPage,
         numPagesToShowInPagination
