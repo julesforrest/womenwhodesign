@@ -21,6 +21,7 @@
     "lodash": "^4.17.11",
     "marked": "^0.8.0",
     "node-sass": "^4.13.1",
+    "query-string": "^6.11.1",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-helmet": "^5.2.0",

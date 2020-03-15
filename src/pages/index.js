@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import classnames from "classnames";
+import { stringify as qsStringify } from "query-string";
 import categories from "../categories";
 import Profile from "../components/profile";
 import Layout from "../components/layout";
@@ -42,10 +43,14 @@ const App = () => {
   const hash = useRef(Math.random());
 
   const { data } = useFetch(
-    `https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/randomizeDesigners?hash=${
-      hash.current
-    }&limit=${numDesignersPerPage}&offset=${numDesignersPerPage *
-      (currentPage - 1)}`
+    // eslint-disable-next-line prefer-template
+    "https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/api?" +
+      qsStringify({
+        hash: hash.current,
+        limit: numDesignersPerPage,
+        offset: numDesignersPerPage * (currentPage - 1),
+        tags: selectedFilters
+      })
   );
 
   const pagination = data
