@@ -29,7 +29,7 @@ const App = () => {
 
   const hash = useRef(Math.random());
 
-  const { data } = useSWR(
+  const { data: apiData } = useSWR(
     // eslint-disable-next-line prefer-template
     "https://womenwhodesign-e87dc.firebaseapp.com/api?" +
       qsStringify({
@@ -46,9 +46,9 @@ const App = () => {
     fetcher
   );
 
-  const pagination = data
+  const pagination = apiData
     ? paginate(
-        data.info.numFilteredDesigners,
+        apiData.info.numFilteredDesigners,
         currentPage,
         numDesignersPerPage,
         numPagesToShowInPagination
@@ -65,7 +65,7 @@ const App = () => {
             toggleFilterList={() => {
               setIsFilterListVisible(!isFilterListVisible);
             }}
-            isLoading={!data}
+            isLoading={!apiData}
           />
 
           <div
@@ -178,7 +178,7 @@ const App = () => {
               </button>
             </div>
           )}
-          {data && (
+          {apiData && (
             <>
               <div
                 className={classnames({
@@ -186,7 +186,7 @@ const App = () => {
                   [styles.filterBannerBump]: selectedFilters.length > 0
                 })}
               >
-                {data.designers.map(designer => (
+                {apiData.designers.map(designer => (
                   <Profile
                     image={designer.image}
                     name={designer.name}
