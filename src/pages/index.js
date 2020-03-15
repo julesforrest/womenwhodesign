@@ -44,7 +44,7 @@ const App = () => {
 
   const { data } = useFetch(
     // eslint-disable-next-line prefer-template
-    "https://us-central1-womenwhodesign-e87dc.cloudfunctions.net/api?" +
+    "https://womenwhodesign-e87dc.firebaseapp.com/api?" +
       qsStringify({
         hash: hash.current,
         limit: numDesignersPerPage,
