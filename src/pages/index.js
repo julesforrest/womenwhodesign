@@ -39,13 +39,6 @@ const App = () => {
   const numDesignersPerPage = 52;
   const numPagesToShowInPagination = 5;
 
-  const pagination = paginate(
-    1000,
-    currentPage,
-    numDesignersPerPage,
-    numPagesToShowInPagination
-  );
-
   const hash = useRef(Math.random());
 
   const { data } = useFetch(
@@ -54,6 +47,15 @@ const App = () => {
     }&limit=${numDesignersPerPage}&offset=${numDesignersPerPage *
       (currentPage - 1)}`
   );
+
+  const pagination = data
+    ? paginate(
+        data.info.totalDesigners,
+        currentPage,
+        numDesignersPerPage,
+        numPagesToShowInPagination
+      )
+    : null;
 
   return (
     <Layout>
@@ -184,7 +186,7 @@ const App = () => {
                   [styles.filterBannerBump]: selectedFilters.length > 0
                 })}
               >
-                {data.map(designer => (
+                {data.designers.map(designer => (
                   <Profile
                     image={designer.image}
                     name={designer.name}
