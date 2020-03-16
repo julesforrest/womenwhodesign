@@ -1,6 +1,6 @@
 # Women Who Design
 
-Women Who Design is a [Gatsby](https://gatsbyjs.org)-powered Twitter directory of accomplished women in the design industry. It aims to help people find notable and relevant voices to follow on Twitter by parsing Twitter bios for popular keywords.
+Women Who Design is a [Gatsby](https://www.gatsbyjs.org)-powered Twitter directory of accomplished women in the design industry. It aims to help people find notable and relevant voices to follow on Twitter by parsing Twitter bios for popular keywords.
 
 Here are some things Women Who Design can help you with:
 
