@@ -260,26 +260,28 @@
   border: none;
   padding: calc(var(--page-shell-padding) / 4);
   margin: calc(var(--page-shell-padding) / 8);
+  text-decoration: none;
+  font-family: $graphik;
 
   color: var(--text);
   line-height: 1;
   border-radius: 2px;
 }
 
-.pageNumberButton:disabled {
+.pageNumberButton:not([href]) {
   font-weight: 500;
   --text: white;
   --background: var(--gray);
 }
 
-.pageNumberButton:not(:disabled) {
+.pageNumberButton:not(:not([href])) {
   cursor: pointer;
 }
 
-.pageNumberButton:hover:not(:disabled) {
+.pageNumberButton:hover:not(:not([href])) {
   --background: var(--border-gray);
 }
-.pageNumberButton:focus:not(:disabled) {
+.pageNumberButton:focus:not(:not([href])) {
   box-shadow: 0 0 0 1px var(--text);
   outline: none;
 }
@@ -287,6 +289,6 @@
 .paginationArrow {
   composes: arrow pageNumberButton;
 }
-.paginationArrow:disabled {
+.paginationArrow:not([href]) {
   display: none;
 }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { navigate } from "@reach/router";
+import { castArray } from "lodash";
 import classnames from "classnames";
-import { stringify as qsStringify } from "query-string";
+import qs from "query-string";
 import useSWR from "swr";
 import categories from "../categories";
 import Profile from "../components/profile";
@@ -15,28 +18,32 @@ const fetcher = async url => {
   return r.json();
 };
 
-const App = () => {
+const App = d => {
+  const params = qs.parse(d.location.search);
+
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState([]);
   const [isFilterListVisible, setIsFilterListVisible] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const selectedFilters = params.tags ? castArray(params.tags) : [];
+  const currentPage = parseInt(params.page, 10) || 1;
+
+  const [pagination, setPagination] = useState(null);
 
   const profileContainerRef = useRef();
 
   const numDesignersPerPage = 52;
   const numPagesToShowInPagination = 5;
 
-  const hash = useRef(Math.random());
+  const hash = useRef(params.hash || Math.round(Math.random() * 1000000));
 
   const { data: apiData } = useSWR(
     // eslint-disable-next-line prefer-template
     "https://womenwhodesign-e87dc.firebaseapp.com/api?" +
-      qsStringify({
+      qs.stringify({
         hash: hash.current,
         limit: numDesignersPerPage,
         offset: numDesignersPerPage * (currentPage - 1),
-        tags: selectedFilters.sort()
+        tags: selectedFilters && selectedFilters.sort()
       }),
     fetcher
   );
@@ -46,14 +53,30 @@ const App = () => {
     fetcher
   );
 
-  const pagination = apiData
-    ? paginate(
-        apiData.info.numFilteredDesigners,
-        currentPage,
-        numDesignersPerPage,
-        numPagesToShowInPagination
-      )
-    : null;
+  useEffect(() => {
+    if (apiData) {
+      setPagination(
+        paginate(
+          apiData.info.numFilteredDesigners,
+          currentPage,
+          numDesignersPerPage,
+          numPagesToShowInPagination
+        )
+      );
+    }
+  }, [apiData, currentPage]);
+
+  useEffect(() => {
+    profileContainerRef.current.scrollTo(0, 0);
+  }, [currentPage]);
+
+  const getUrl = ({ page = params.page, tags = params.tags }) => {
+    return `/?${qs.stringify({
+      page,
+      tags,
+      hash: hash.current
+    })}`;
+  };
 
   return (
     <Layout>
@@ -104,8 +127,9 @@ const App = () => {
                             newSelectedFilters.splice(i, 1);
                           }
 
-                          setSelectedFilters(newSelectedFilters);
-                          setCurrentPage(1);
+                          navigate(
+                            getUrl({ page: 1, tags: newSelectedFilters })
+                          );
                         }}
                         checked={selectedFilters.includes(category.id)}
                         className={styles.filterItemInput}
@@ -160,16 +184,14 @@ const App = () => {
                       const i = newSelectedFilters.indexOf(filterId);
                       newSelectedFilters.splice(i, 1);
 
-                      setSelectedFilters(newSelectedFilters);
-                      setCurrentPage(1);
+                      navigate(getUrl({ page: 1, tags: newSelectedFilters }));
                     }}
                   />
                 ))}
               </div>
               <button
                 onClick={() => {
-                  setSelectedFilters([]);
-                  setCurrentPage(1);
+                  navigate(getUrl({ page: 1, tags: [] }));
                 }}
                 className={styles.filterClear}
                 type="button"
@@ -200,82 +222,100 @@ const App = () => {
                   />
                 ))}
               </div>
-              <div className={styles.paginationContainer}>
-                <button
-                  onClick={() => {
-                    setCurrentPage(currentPage - 1);
-                    profileContainerRef.current.scrollTo(0, 0);
-                  }}
-                  disabled={pagination.currentPage === pagination.startPage}
-                  type="button"
-                  className={styles.paginationArrow}
-                >
-                  ←
-                </button>
-                <button
-                  className={styles.pageNumberButton}
-                  onClick={() => {
-                    setCurrentPage(1);
-                    profileContainerRef.current.scrollTo(0, 0);
-                  }}
-                  type="button"
-                  disabled={pagination.currentPage === 1}
-                >
-                  1
-                </button>
-                {currentPage >= numPagesToShowInPagination && <>&hellip;</>}
-                {pagination.pages.map(pageNumber => {
-                  // Skip over these page numbers because they'll always appear
-                  // in the pagination.
-                  if (
-                    pageNumber === 1 ||
-                    pageNumber === pagination.totalPages
-                  ) {
-                    return null;
-                  }
+              {pagination && (
+                <div className={styles.paginationContainer}>
+                  <a
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate(getUrl({ page: currentPage - 1 }));
+                    }}
+                    className={styles.paginationArrow}
+                    href={
+                      pagination.currentPage === pagination.startPage
+                        ? undefined
+                        : getUrl({ page: currentPage - 1 })
+                    }
+                  >
+                    ←
+                  </a>
+                  <a
+                    className={styles.pageNumberButton}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate(getUrl({ page: 1 }));
+                    }}
+                    href={
+                      pagination.currentPage === 1
+                        ? undefined
+                        : getUrl({ page: 1 })
+                    }
+                  >
+                    1
+                  </a>
+                  {currentPage >= numPagesToShowInPagination && <>&hellip;</>}
+                  {pagination.pages.map(pageNumber => {
+                    // Skip over these page numbers because they'll always appear
+                    // in the pagination.
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === pagination.totalPages
+                    ) {
+                      return null;
+                    }
 
-                  return (
-                    <button
-                      key={pageNumber}
-                      className={styles.pageNumberButton}
-                      onClick={() => {
-                        setCurrentPage(pageNumber);
-                        profileContainerRef.current.scrollTo(0, 0);
-                      }}
-                      disabled={pagination.currentPage === pageNumber}
-                      type="button"
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-                {currentPage <=
-                  pagination.totalPages - (numPagesToShowInPagination + 1) && (
-                  <>&hellip;</>
-                )}
-                <button
-                  className={styles.pageNumberButton}
-                  onClick={() => {
-                    setCurrentPage(pagination.totalPages);
-                    profileContainerRef.current.scrollTo(0, 0);
-                  }}
-                  type="button"
-                  disabled={pagination.currentPage === pagination.totalPages}
-                >
-                  {pagination.totalPages}
-                </button>
-                <button
-                  onClick={() => {
-                    setCurrentPage(currentPage + 1);
-                    profileContainerRef.current.scrollTo(0, 0);
-                  }}
-                  disabled={pagination.currentPage === pagination.endPage}
-                  type="button"
-                  className={styles.paginationArrow}
-                >
-                  →
-                </button>
-              </div>
+                    return (
+                      <a
+                        key={pageNumber}
+                        className={styles.pageNumberButton}
+                        onClick={e => {
+                          e.preventDefault();
+                          navigate(getUrl({ page: pageNumber }));
+                        }}
+                        href={
+                          pagination.currentPage === pageNumber
+                            ? undefined
+                            : getUrl({ page: pageNumber })
+                        }
+                      >
+                        {pageNumber}
+                      </a>
+                    );
+                  })}
+
+                  {currentPage <=
+                    pagination.totalPages -
+                      (numPagesToShowInPagination + 1) && <>&hellip;</>}
+
+                  <a
+                    className={styles.pageNumberButton}
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate(getUrl({ page: pagination.totalPages }));
+                    }}
+                    href={
+                      pagination.currentPage === pagination.totalPages
+                        ? undefined
+                        : getUrl({ page: pagination.totalPages })
+                    }
+                  >
+                    {pagination.totalPages}
+                  </a>
+                  <a
+                    onClick={e => {
+                      e.preventDefault();
+                      navigate(getUrl({ page: pagination.currentPage + 1 }));
+                    }}
+                    className={styles.paginationArrow}
+                    href={
+                      pagination.currentPage === pagination.endPage
+                        ? undefined
+                        : getUrl({ page: pagination.currentPage + 1 })
+                    }
+                  >
+                    →
+                  </a>
+                </div>
+              )}
             </>
           )}
         </div>
