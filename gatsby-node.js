@@ -4,7 +4,7 @@ const _ = require("lodash");
 exports.onCreateNode = ({ node, actions }) => {
   const { createNodeField } = actions;
   if (node.internal.type === `Seeker`) {
-    const slug = `jobs/${node.job.id.slice(0, 5)}-${_.kebabCase(
+    const slug = `/jobs/${node.job.id.slice(0, 5)}-${_.kebabCase(
       node.job.company.name
     )}-${_.kebabCase(node.job.job_title)}`;
 
